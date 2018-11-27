@@ -4,11 +4,13 @@
 
 #include "unitData.hpp"
 
+#define DEFAULT_PLAYER_FILE		"res/data/players.json"
+
 class Customization : public State {
 
 public:
 
-	Customization();
+	Customization(const std::string& file = DEFAULT_PLAYER_FILE);
 	~Customization();
 
 	void handleEvent(const SDL_Event& e) override;
@@ -17,6 +19,10 @@ public:
 
 private:
 
+	std::vector<UnitData> units;
+
 	void displayUnitData(const UnitData& data);
+	void renderUnit(int x, int y, UnitData unit);
+	void generateDefaultUnitData();
 
 };

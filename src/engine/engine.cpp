@@ -6,12 +6,14 @@
 
 // Std library includes
 #include <iostream>
+#include <ctime>
 
 // Other project includes
 #include "renderer.hpp"
 #include "text/textRenderer.hpp"
 #include "textureManager.hpp"
 #include "state.hpp"
+#include "mixer.hpp"
 
 bool Engine::init(const char * name, int window_width, int window_height) {
 
@@ -68,11 +70,17 @@ bool Engine::init(const char * name, int window_width, int window_height) {
 	// Initialize the texture manager
 	m_textureManager = new TextureManager();
 
+	// Initialize the mixer
+	m_mixer = new Mixer();
+
 	// reset m_lastTick for a more accurate first tick
 	m_lastTick = SDL_GetTicks();
 
 	mac_fix = 0;
 
+	// Seed random
+	srand(static_cast<unsigned int>(time(0)));
+	
 	return true;
 }
 
@@ -141,6 +149,10 @@ TextRenderer * Engine::getTextRenderer() {
 
 TextureManager * Engine::getTextureManager() {
 	return m_textureManager;
+}
+
+Mixer * Engine::getMixer() {
+	return m_mixer;
 }
 
 void Engine::setState(State * state) {

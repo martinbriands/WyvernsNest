@@ -30,6 +30,7 @@ class Grid {
 public:
 
 	Grid();
+	Grid(std::string file);
 	~Grid();
 
 	void render();
@@ -64,8 +65,9 @@ public:
 
 private:
 
+	void init();
+
 	// Grid sprites
 	Sprite tilesheet;
-	Sprite selected;
 
 };

@@ -1,31 +1,39 @@
 #include "grid.hpp"
 
 #include <cmath> 
+#include <fstream>
 
-#include <iostream>
+// File JSON handling
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
+
 Grid::Grid() :
 	tilemap(DEFAULT_TILEMAP),
 	map_width(DEFAULT_MAP_WIDTH),
 	map_height(DEFAULT_MAP_HEIGHT),
-	tilesheet("res/assets/Tiles.png"), 
-	selected("res/test3.png") 
+	tilesheet("res/assets/tiles/tilesheet1.png")
 {
-	// Calculate the tile size based on the screen size
-	tile_width = Core::windowWidth() / map_width;
-	tile_height = Core::windowHeight() / map_height;
-	// Initialize the tile sprites to the tile width/height
-	selected.setSize(tile_width, tile_height);
-	tilesheet.setSourceSize(SOURCE_TILE_WIDTH, SOURCE_TILE_HEIGHT);
-	tilesheet.setSize(tile_width, tile_height);
+	init();
+}
 
-	// Fill the grid with no collisions and add the buffer space on top
-	for (unsigned int i = 0; i < tilemap.size(); ++i) {
-		if (i < static_cast<unsigned int>(map_width)) collisionmap.push_back(true);
-		else collisionmap.push_back(false);
+// Constructor to load the grid from file data
+// TODO: Add collision map loading in file data
+Grid::Grid(std::string file) : tilesheet("INVALID") {
+	std::ifstream inp(file);
+	// Use the provided overloaded operators to lead the json data
+	json data;
+	inp >> data;
+
+	// Get the map width and height
+	map_width  = data["width"];
+	map_height = data["height"];
+	tilesheet = Sprite(data["tilesheet"]);
+	for (int tile : data["tilemap"]) {
+		tilemap.push_back(tile);
 	}
 
-	// Debugging code
-	renderOutline = true;
+	// Initialize other grid attributes based on current map attributes
+	init();
 }
 
 Grid::~Grid() {
@@ -62,6 +70,26 @@ bool Grid::isPosValid(Vec2<int> pos) const {
 	return isPosEmpty(pos) && tilemap[TILE_INDEX(pos.x(), pos.y())] != 21;
 }
 
+// TODO: Add option to vary source tile width/height
+// TODO: Add option to load collision map through file
+void Grid::init() {
+	// Calculate the tile size based on the screen size
+	tile_width = Core::windowWidth() / map_width;
+	tile_height = (Core::windowHeight() / map_height) + 1;
+	// Initialize the tile sprites to the tile width/height
+	tilesheet.setSourceSize(SOURCE_TILE_WIDTH, SOURCE_TILE_HEIGHT);
+	tilesheet.setSize(tile_width, tile_height);
+
+	// Fill the grid with no collisions and add the buffer space on top
+	for (unsigned int i = 0; i < tilemap.size(); ++i) {
+		if (i < static_cast<unsigned int>(map_width)) collisionmap.push_back(true);
+		else collisionmap.push_back(false);
+	}
+
+	// Debugging code
+	renderOutline = true;
+}
+
 void Grid::render()
 {
 	for (int y = 0; y < map_height; y++) {
@@ -70,12 +98,6 @@ void Grid::render()
 			tilesheet.setSourcePos(INDEX_TO_X(index) * SOURCE_TILE_WIDTH, INDEX_TO_Y(index) * SOURCE_TILE_HEIGHT);
 			tilesheet.setPos(tile_width * x, tile_height * y);
 			tilesheet.render();
-			/*	RENDER THE SELECTED TILE
-			if (y == mousePos.y() && x == mousePos.x()) {
-				selected.setPos(tile_width * x , Core::windowHeight() - tile_height * (y + 1));
-				selected.render();
-			}
-			*/
 		}
 	}
 	// Render the debugging outline if set

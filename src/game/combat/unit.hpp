@@ -36,36 +36,39 @@ public:
 	// The position of the unit in terms of screen coordinates
 	ScreenCoord screenPosition;
 
-	// A flag indicating whether the unit is selected
-	bool selected = false;
+	// Render methods
+	virtual void renderBottom();
+	// virtual void renderUnit();	<-- USE THE ORIGINAL ENTITY RENDER FUNCTION FOR THIS
+	virtual void renderTop();
+	virtual void renderHealth();
 
 	// Getter methods
-	inline UnitState getState() const { return state; }
-	inline UnitType getType() const { return type; }
+	UnitState getState() const { return state; }
+	UnitType getType() const { return type; }
 	// Unit attribute getter methods
-	inline int getSTR() const { return data.strength; }
-	inline int getDEX() const { return data.dexterity; }
-	inline int getINT() const { return data.intelligence; }
-	inline int getCON() const { return data.constitution; }
-	inline int getMoveSpeed() const { return move_speed; }
-	inline int getMaxHealth() const { return maxHealth; }
-
+	int getStat(Stat stat) const;
+	int getSTR() const { return data.strength; }
+	int getDEX() const { return data.dexterity; }
+	int getINT() const { return data.intelligence; }
+	int getCON() const { return data.constitution; }
+	int getMoveSpeed() const { return move_speed; }
+	int getMaxHealth() const { return maxHealth; }
 
 	// Setter methods
 	void setTileSize(int width, int height);
 	void setTopMargin(int margin);
 	void setState(UnitState newState) { state = newState; }
 
-
 	// The health variables of the unit
 	int health;
 	int maxHealth;
-	void takeDamage(int damage);
-	void renderHealth();
 
-	// The attacks of the unit
-	Attack attack1;
-	Attack attack2;
+	// Utility functions common across all units
+	void select();
+	void deselect();
+	void takeDamage(int damage);
+	void heal(int health);
+	bool move(Combat& combat, Vec2<int> pos);
 
 	// Utility references to the combat state to access needed data
 	Combat * combat;
@@ -74,6 +77,7 @@ protected:
 
 	// Variables that contain various useful stats for the unit
 	int move_speed;
+	bool selected = false;
 	void loadPropertiesFromUnitData();
 
 	// State variable of the unit
@@ -84,6 +88,21 @@ protected:
 	inline void incrementCounter() { state_counter++; }
 	inline bool compareCounter(int num) const { return state_counter >= num; }
 
+	// Variables to help keep track of unit movement
+	std::vector<Vec2<int>> path;
+	ScreenCoord moveTarget;
+	ScreenCoord moveDiff;
+	ScreenCoord moveNext;
+	// Helper variables for unit movement
+	std::vector<ScreenCoord> getPath(Combat & combat, ScreenCoord to);
+	// Pathfinding helper methods
+	std::vector<ScreenCoord> heuristic(std::vector<std::vector<ScreenCoord>> * open);
+	std::vector<ScreenCoord> getValidNeighbours(ScreenCoord pos, Combat & combat);
+	// Helper functions to calculate the screen position and movement of the player
+	void calculateScreenPositionMovement();
+	void incrementMovement();
+
+
 	// Helper method to calculate the screen position based on grid position
 	void calculateScreenPosition();
 
@@ -92,6 +111,10 @@ protected:
 	int sprite_height;
 	int tile_width, tile_height;
 	int top_margin;
+
+	// Virtual functions that units can override to customize functionality
+	virtual void takeDamageCallback(int damage);
+	virtual void selectCallback();
 
 	// Common sprites used by most units
 	Sprite shadow;
