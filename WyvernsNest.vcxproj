@@ -157,6 +157,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\animatedSprite.hpp" />
+    <ClInclude Include="src\engine\attackSprite.hpp" />
     <ClInclude Include="src\engine\core.hpp" />
     <ClInclude Include="src\engine\engine.hpp" />
     <ClInclude Include="src\engine\entity.hpp" />
